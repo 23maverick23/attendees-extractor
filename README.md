@@ -1,6 +1,8 @@
 # Attendees Extractor Plugin
 
-An Obsidian plugin that extracts attendee names from markdown files and updates the YAML frontmatter with templated links.
+An Obsidian plugin that extracts attendee names from your notes/files and updates the YAML frontmatter with templated links.
+
+Please note: this is a very opinionated plugin. I built this quickly using Cursor to solve a very specific design challenge with how I use Obsidian for tracking meetings at work, and how I'd like Bases to work with my notes moving forward. I have no intentions of adding additional features unless my personal workflow changes. I have added what I believe to be enough configuration that others _could_ use this assuming they have a relatively similar use case they want to solve.
 
 ## Features
 

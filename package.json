@@ -1,6 +1,6 @@
 {
   "name": "attendees-extractor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Extracts attendee names from a markdown heading and updates the frontmatter property.",
   "main": "main.js",
   "scripts": {
