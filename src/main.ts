@@ -7,7 +7,6 @@ interface AttendeesExtractorSettings {
   template: string;
   enableOnSave: boolean;
   directories: string[];
-  showGutterMarkers: boolean;
 }
 
 const DEFAULT_SETTINGS: AttendeesExtractorSettings = {
@@ -16,7 +15,6 @@ const DEFAULT_SETTINGS: AttendeesExtractorSettings = {
   template: "[[People/{name}|{name}]]",
   enableOnSave: false,
   directories: [],
-  showGutterMarkers: true,
 };
 
 export default class AttendeesExtractorPlugin extends Plugin {
@@ -278,7 +276,7 @@ class AttendeesExtractorSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Heading Name")
-      .setDesc("The heading to search for (e.g., 'Attendees')")
+      .setDesc("The heading to search for, without the hash sign (e.g., 'Attendees')")
       .addText((text) =>
         text
           .setPlaceholder("Attendees")
@@ -304,7 +302,7 @@ class AttendeesExtractorSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Template String")
-      .setDesc("Template for each name (use {name} as placeholder)")
+      .setDesc("Template to use in property for each name extracted ({name} will be replaced with the extracted name)")
       .addText((text) =>
         text
           .setPlaceholder("[[People/{name}|{name}]]")
@@ -316,34 +314,8 @@ class AttendeesExtractorSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Enable on Save")
-      .setDesc("Automatically update on file save")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.enableOnSave)
-          .onChange(async (value) => {
-            this.plugin.settings.enableOnSave = value;
-            await this.plugin.saveSettings();
-            await this.plugin.onSettingChange();
-          })
-      );
-
-    new Setting(containerEl)
-      .setName("Show Sync Indicators")
-      .setDesc("Show sync status indicators next to attendee lines")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showGutterMarkers)
-          .onChange(async (value) => {
-            this.plugin.settings.showGutterMarkers = value;
-            await this.plugin.saveSettings();
-            await this.plugin.onSettingChange();
-          })
-      );
-
-    new Setting(containerEl)
       .setName("Target Directories")
-      .setDesc("Comma-separated list of directories to run in (leave blank for all)")
+      .setDesc("Comma-separated list of directories to allow extraction from (leave blank for all)")
       .addText((text) =>
         text
           .setPlaceholder("Meetings,Projects")
@@ -354,6 +326,19 @@ class AttendeesExtractorSettingTab extends PluginSettingTab {
               .map((s) => s.trim())
               .filter((s) => s.length > 0);
             await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Enable on Save")
+      .setDesc("Automatically extract attendees on file save")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableOnSave)
+          .onChange(async (value) => {
+            this.plugin.settings.enableOnSave = value;
+            await this.plugin.saveSettings();
+            await this.plugin.onSettingChange();
           })
       );
   }
