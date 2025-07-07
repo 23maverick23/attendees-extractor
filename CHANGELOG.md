@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-07-06
+
+### Added
+
+- GitHub action workflow to automate releases.
+
+### Changed
+
+- Updated package.json and manifest.json with description.
+- Tweak settings to follow proper Obsidian guidelines.
+
 ## [0.1.0] - 2025-07-01
 
 ### Added
@@ -43,3 +54,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.0.2]: /releases/tag/v0.0.2
 [0.0.3]: /releases/tag/v0.0.3
 [0.1.0]: /releases/tag/v0.1.0
+[0.1.1]: /releases/tag/v0.1.1

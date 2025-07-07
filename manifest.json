@@ -1,9 +1,9 @@
 {
 	"id": "attendees-extractor",
 	"name": "Attendees Extractor",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "0.15.0",
-	"description": "Extracts attendee names from a markdown heading and updates the frontmatter property.",
+	"description": "Extract attendee names from inside a markdown heading and update a frontmatter property.",
 	"author": "Ryan Morrissey",
 	"authorUrl": "https://ryancmorrissey.com/",
 	"fundingUrl": "https://www.buymeacoffee.com/ryancmorrissey",

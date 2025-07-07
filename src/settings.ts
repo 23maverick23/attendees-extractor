@@ -18,7 +18,9 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Attendees Extractor Settings" });
+    new Setting(containerEl)
+      .setName("Attendees Extractor")
+      .setHeading();
 
     this.addHeadingNameSetting(containerEl);
     this.addFrontmatterPropertySetting(containerEl);
@@ -29,7 +31,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 
   private addHeadingNameSetting(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Heading Name")
+      .setName("Heading name")
       .setDesc("The heading to search for, without the hash sign (e.g., 'Attendees')")
       .addText((text) =>
         text
@@ -44,7 +46,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 
   private addFrontmatterPropertySetting(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Frontmatter Property")
+      .setName("Frontmatter property")
       .setDesc("The YAML property to update (e.g., 'people')")
       .addText((text) =>
         text
@@ -59,7 +61,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 
   private addTemplateSetting(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Template String")
+      .setName("Template string")
       .setDesc("Template to use in property for each name extracted ({name} will be replaced with the extracted name)")
       .addText((text) =>
         text
@@ -74,7 +76,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 
   private addDirectoriesSetting(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Target Directories")
+      .setName("Target directories")
       .setDesc("Comma-separated list of directories to allow extraction from (leave blank for all)")
       .addText((text) =>
         text
@@ -92,7 +94,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 
   private addEnableOnSaveSetting(containerEl: HTMLElement): void {
     new Setting(containerEl)
-      .setName("Enable on Save")
+      .setName("Enable on save")
       .setDesc("Automatically extract attendees on file save")
       .addToggle((toggle) =>
         toggle
