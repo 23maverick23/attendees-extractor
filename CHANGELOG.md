@@ -49,9 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LICENSE file to enable community contributions.
 - README to explain the plugin and how to use it.
 
-[unreleased]: /compare/v1.1.1...HEAD
-[0.0.1]: /releases/tag/v0.0.1
-[0.0.2]: /releases/tag/v0.0.2
-[0.0.3]: /releases/tag/v0.0.3
-[0.1.0]: /releases/tag/v0.1.0
-[0.1.1]: /releases/tag/v0.1.1
+[unreleased]: /compare/0.1.1...HEAD
+[0.0.1]: /releases/tag/0.0.1
+[0.0.2]: /releases/tag/0.0.2
+[0.0.3]: /releases/tag/0.0.3
+[0.1.0]: /releases/tag/0.1.0
+[0.1.1]: /releases/tag/0.1.1
