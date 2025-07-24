@@ -4,4 +4,8 @@ export interface AttendeesExtractorSettings {
   template: string;
   directories: string[];
   enableOnSave: boolean;
+  // Autocomplete settings
+  enableAutocomplete: boolean;
+  autocompleteTrigger: string;
+  peopleDirectory: string;
 }

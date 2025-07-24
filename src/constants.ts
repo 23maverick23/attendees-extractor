@@ -6,6 +6,9 @@ export const DEFAULT_SETTINGS: AttendeesExtractorSettings = {
   template: "[[People/{name}|{name}]]",
   directories: [],
   enableOnSave: false,
+  enableAutocomplete: true,
+  autocompleteTrigger: "@",
+  peopleDirectory: "People",
 };
 
 export const PLUGIN_COMMANDS = {

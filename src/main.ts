@@ -6,12 +6,14 @@ import { FileUtils } from './file-utils';
 import { FrontmatterManager } from './frontmatter-manager';
 import { SaveInterceptor } from './save-interceptor';
 import { AttendeesExtractorSettingTab, SettingsManager } from './settings';
+import { AttendeeSuggest } from './attendee-suggest';
 
 export default class AttendeesExtractorPlugin extends Plugin implements SettingsManager {
   settings: AttendeesExtractorSettings;
   private parser: AttendeeParser;
   private frontmatterManager: FrontmatterManager;
   private saveInterceptor: SaveInterceptor;
+  private attendeeSuggest: AttendeeSuggest | null = null;
   private statusBarItem: HTMLElement | null = null;
 
   async onload() {
@@ -23,10 +25,15 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
     if (this.settings.enableOnSave) {
       this.saveInterceptor.setup();
     }
+
+    if (this.settings.enableAutocomplete) {
+      this.setupAutocomplete();
+    }
   }
 
   async onunload() {
     this.saveInterceptor.remove();
+    this.removeAutocomplete();
   }
 
   async onSettingChange() {
@@ -37,6 +44,12 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
       this.saveInterceptor.setup();
     } else {
       this.saveInterceptor.remove();
+    }
+
+    if (this.settings.enableAutocomplete) {
+      this.setupAutocomplete();
+    } else {
+      this.removeAutocomplete();
     }
   }
 
@@ -154,5 +167,18 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
 
   async saveSettings() {
     await this.saveData(this.settings);
+  }
+
+  private setupAutocomplete(): void {
+    this.removeAutocomplete(); // Clean up existing instance
+    this.attendeeSuggest = new AttendeeSuggest(this.app, this.settings);
+    this.registerEditorSuggest(this.attendeeSuggest);
+  }
+
+  private removeAutocomplete(): void {
+    if (this.attendeeSuggest) {
+      // Obsidian automatically unregisters when plugin unloads
+      this.attendeeSuggest = null;
+    }
   }
 }

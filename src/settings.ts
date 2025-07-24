@@ -22,6 +22,12 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 		this.addTemplateSetting(containerEl);
 		this.addDirectoriesSetting(containerEl);
 		this.addEnableOnSaveSetting(containerEl);
+		
+		// Autocomplete settings section
+		containerEl.createEl("h3", { text: "Autocomplete Settings" });
+		this.addEnableAutocompleteSetting(containerEl);
+		this.addAutocompleteTriggerSetting(containerEl);
+		this.addPeopleDirectorySetting(containerEl);
 	}
 
 	private addHeadingNameSetting(containerEl: HTMLElement): void {
@@ -106,6 +112,51 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 						this.settingsManager.settings.enableOnSave = value;
 						await this.settingsManager.saveSettings();
 						await this.settingsManager.onSettingChange();
+					})
+			);
+	}
+
+	private addEnableAutocompleteSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Enable autocomplete")
+			.setDesc("Enable inline autocomplete for attendee names using existing people from your vault")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.settingsManager.settings.enableAutocomplete)
+					.onChange(async (value) => {
+						this.settingsManager.settings.enableAutocomplete = value;
+						await this.settingsManager.saveSettings();
+						await this.settingsManager.onSettingChange();
+					})
+			);
+	}
+
+	private addAutocompleteTriggerSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Autocomplete trigger")
+			.setDesc("Character to trigger autocomplete suggestions")
+			.addText((text) =>
+				text
+					.setPlaceholder("@")
+					.setValue(this.settingsManager.settings.autocompleteTrigger)
+					.onChange(async (value) => {
+						this.settingsManager.settings.autocompleteTrigger = value;
+						await this.settingsManager.saveSettings();
+					})
+			);
+	}
+
+	private addPeopleDirectorySetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("People directory")
+			.setDesc("Directory containing person files (relative to vault root)")
+			.addText((text) =>
+				text
+					.setPlaceholder("People")
+					.setValue(this.settingsManager.settings.peopleDirectory)
+					.onChange(async (value) => {
+						this.settingsManager.settings.peopleDirectory = value;
+						await this.settingsManager.saveSettings();
 					})
 			);
 	}
