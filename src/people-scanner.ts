@@ -37,10 +37,19 @@ export class PeopleScanner {
       return people;
     }
 
-    const lowercaseQuery = query.toLowerCase();
-    return people.filter(person =>
-      person.name.toLowerCase().includes(lowercaseQuery)
-    );
+    const lowercaseQuery = query.toLowerCase().trim();
+    return people.filter(person => {
+      const lowercaseName = person.name.toLowerCase();
+      
+      // Match if name contains the query
+      if (lowercaseName.includes(lowercaseQuery)) {
+        return true;
+      }
+      
+      // Also match individual words in multi-word names
+      const nameWords = lowercaseName.split(/\s+/);
+      return nameWords.some(word => word.startsWith(lowercaseQuery));
+    });
   }
 
   private isPersonFile(file: TFile): boolean {

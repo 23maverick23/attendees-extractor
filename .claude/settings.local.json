@@ -6,7 +6,9 @@
       "WebFetch(domain:api.github.com)",
       "Bash(curl:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(gh release upload:*)",
+      "Bash(gh release view:*)"
     ],
     "deny": []
   }

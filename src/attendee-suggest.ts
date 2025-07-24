@@ -42,47 +42,53 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
       return null;
     }
 
+    // Get the current line
+    const line = editor.getLine(cursor.line);
+    
+    // Find the trigger character by looking backwards from cursor
+    let triggerPos = -1;
+    for (let i = cursor.ch - 1; i >= 0; i--) {
+      if (line.substring(i, i + trigger.length) === trigger) {
+        // Check if there's a word boundary before the trigger
+        const precedingChar = i > 0 ? line[i - 1] : "";
+        if (!precedingChar || /\s|[^\w]/.test(precedingChar)) {
+          triggerPos = i;
+          break;
+        }
+      }
+    }
+
+    // No trigger found
+    if (triggerPos === -1) {
+      return null;
+    }
+
     const startPos = {
       line: cursor.line,
-      ch: cursor.ch - trigger.length,
+      ch: triggerPos,
     };
-
-    // Check if current text starts with trigger
-    if (startPos.ch < 0) {
-      return null;
-    }
-
-    const textBeforeCursor = editor.getRange(startPos, cursor);
-    if (!textBeforeCursor.startsWith(trigger)) {
-      return null;
-    }
-
-    // Prevent triggering within words or after certain characters
-    const precedingChar = startPos.ch > 0 ? 
-      editor.getRange(
-        { line: startPos.line, ch: startPos.ch - 1 },
-        startPos
-      ) : "";
-    
-    if (precedingChar && /[a-zA-Z0-9]/.test(precedingChar)) {
-      return null;
-    }
 
     // Find the end of the current word (until space, punctuation, or line end)
     let endPos = cursor;
-    const line = editor.getLine(cursor.line);
     let ch = cursor.ch;
     
-    while (ch < line.length && /[a-zA-Z0-9\-_]/.test(line[ch])) {
+    while (ch < line.length && /[a-zA-Z0-9\-_\s]/.test(line[ch])) {
+      // Stop at space to handle multi-word names properly
+      if (line[ch] === ' ' && ch > cursor.ch) {
+        break;
+      }
       ch++;
     }
     
     endPos = { line: cursor.line, ch };
 
+    const fullText = editor.getRange(startPos, endPos);
+    const query = fullText.substring(trigger.length);
+
     return {
       start: startPos,
       end: endPos,
-      query: editor.getRange(startPos, endPos).substring(trigger.length),
+      query: query,
     };
   }
 
@@ -145,5 +151,8 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
       ch: this.context.start.ch + person.name.length,
     };
     editor.setCursor(newCursor);
+    
+    // Close the suggestion popup
+    this.close();
   }
 }
