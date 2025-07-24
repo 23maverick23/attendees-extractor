@@ -6,6 +6,7 @@ import {
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   TFile,
+  KeymapContext,
 } from "obsidian";
 import { AttendeesExtractorSettings } from './types';
 import { PeopleScanner, PersonSuggestion } from './people-scanner';
@@ -19,6 +20,7 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     this.peopleScanner = new PeopleScanner(app, settings);
     this.initializePeople();
   }
+
 
   async initializePeople(): Promise<void> {
     this.allPeople = await this.peopleScanner.getAllPeople();
@@ -102,6 +104,14 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
 
     const filtered = this.peopleScanner.filterPeople(this.allPeople, query);
     
+    // If no matches, return a special "create new" suggestion
+    if (filtered.length === 0 && query.trim()) {
+      return [{
+        name: context.query, // Use original query (with proper casing)
+        file: null as any, // Special marker for "no match" case
+      }];
+    }
+    
     // Prioritize exact matches and prefix matches
     return filtered.sort((a, b) => {
       const aName = a.name.toLowerCase();
@@ -124,6 +134,16 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
   }
 
   renderSuggestion(person: PersonSuggestion, el: HTMLElement): void {
+    // Handle the "no match" case
+    if (!person.file) {
+      el.createEl("div", { text: person.name, cls: "suggestion-content" });
+      el.createEl("small", { 
+        text: "Use as new name (removes @)", 
+        cls: "suggestion-note" 
+      });
+      return;
+    }
+    
     el.createEl("div", { text: person.name, cls: "suggestion-content" });
     
     // Optionally show file path as secondary info
