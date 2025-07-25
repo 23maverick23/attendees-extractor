@@ -117,16 +117,30 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
       const aName = a.name.toLowerCase();
       const bName = b.name.toLowerCase();
       
-      // Exact match first
+      // Check for exact matches in name
       if (aName === query) return -1;
       if (bName === query) return 1;
       
-      // Prefix match next
+      // Check for exact matches in aliases
+      const aAliasExact = a.aliases?.some(alias => alias.toLowerCase() === query);
+      const bAliasExact = b.aliases?.some(alias => alias.toLowerCase() === query);
+      
+      if (aAliasExact && !bAliasExact) return -1;
+      if (bAliasExact && !aAliasExact) return 1;
+      
+      // Prefix match in name
       const aStartsWith = aName.startsWith(query);
       const bStartsWith = bName.startsWith(query);
       
       if (aStartsWith && !bStartsWith) return -1;
       if (bStartsWith && !aStartsWith) return 1;
+      
+      // Prefix match in aliases
+      const aAliasStartsWith = a.aliases?.some(alias => alias.toLowerCase().startsWith(query));
+      const bAliasStartsWith = b.aliases?.some(alias => alias.toLowerCase().startsWith(query));
+      
+      if (aAliasStartsWith && !bAliasStartsWith) return -1;
+      if (bAliasStartsWith && !aAliasStartsWith) return 1;
       
       // Alphabetical otherwise
       return aName.localeCompare(bName);
@@ -145,6 +159,23 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     }
     
     el.createEl("div", { text: person.name, cls: "suggestion-content" });
+    
+    // Show matched alias if the query matched an alias
+    if (this.context && person.aliases?.length) {
+      const query = this.context.query.toLowerCase();
+      const matchedAlias = person.aliases.find(alias => 
+        alias.toLowerCase().includes(query) || 
+        alias.toLowerCase().split(/\s+/).some(word => word.startsWith(query))
+      );
+      
+      if (matchedAlias && matchedAlias.toLowerCase() !== person.name.toLowerCase()) {
+        el.createEl("small", { 
+          text: `aka "${matchedAlias}"`, 
+          cls: "suggestion-note" 
+        });
+        return;
+      }
+    }
     
     // Optionally show file path as secondary info
     if (person.file.path !== `${this.settings.peopleDirectory}/${person.name}.md`) {

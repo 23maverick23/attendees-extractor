@@ -4,6 +4,7 @@ import { AttendeesExtractorSettings } from './types';
 export interface PersonSuggestion {
   name: string;
   file: TFile;
+  aliases?: string[];
 }
 
 export class PeopleScanner {
@@ -24,7 +25,8 @@ export class PeopleScanner {
       if (this.isPersonFile(file)) {
         const name = this.extractPersonName(file);
         if (name) {
-          people.push({ name, file });
+          const aliases = await this.extractAliases(file);
+          people.push({ name, file, aliases });
         }
       }
     }
@@ -48,7 +50,25 @@ export class PeopleScanner {
       
       // Also match individual words in multi-word names
       const nameWords = lowercaseName.split(/\s+/);
-      return nameWords.some(word => word.startsWith(lowercaseQuery));
+      if (nameWords.some(word => word.startsWith(lowercaseQuery))) {
+        return true;
+      }
+      
+      // Match against aliases
+      if (person.aliases && person.aliases.length > 0) {
+        return person.aliases.some(alias => {
+          const lowercaseAlias = alias.toLowerCase();
+          // Check if alias contains the query or starts with it
+          if (lowercaseAlias.includes(lowercaseQuery)) {
+            return true;
+          }
+          // Also check individual words in multi-word aliases
+          const aliasWords = lowercaseAlias.split(/\s+/);
+          return aliasWords.some(word => word.startsWith(lowercaseQuery));
+        });
+      }
+      
+      return false;
     });
   }
 
@@ -71,5 +91,26 @@ export class PeopleScanner {
     // Remove common person file prefixes/suffixes if needed
     // For now, just return the basename as-is
     return basename;
+  }
+
+  private async extractAliases(file: TFile): Promise<string[]> {
+    try {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const frontmatter = cache?.frontmatter;
+      
+      if (frontmatter && frontmatter.aliases) {
+        const aliases = frontmatter.aliases;
+        if (Array.isArray(aliases)) {
+          return aliases.filter(alias => typeof alias === 'string' && alias.trim().length > 0);
+        } else if (typeof aliases === 'string') {
+          return [aliases.trim()].filter(alias => alias.length > 0);
+        }
+      }
+      
+      return [];
+    } catch (error) {
+      console.warn(`Failed to extract aliases from ${file.path}:`, error);
+      return [];
+    }
   }
 }
