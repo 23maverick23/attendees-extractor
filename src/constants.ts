@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS: AttendeesExtractorSettings = {
   directories: [],
   enableOnSave: false,
   showNotifications: true,
+  debugMode: false,
   enableAutocomplete: true,
   autocompleteTrigger: "@",
   peopleDirectory: "People",

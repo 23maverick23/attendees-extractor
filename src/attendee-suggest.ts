@@ -10,20 +10,25 @@ import {
 } from "obsidian";
 import { AttendeesExtractorSettings } from './types';
 import { PeopleScanner, PersonSuggestion } from './people-scanner';
+import { DebugLogger } from './debug-logger';
 
 export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
   private peopleScanner: PeopleScanner;
   private allPeople: PersonSuggestion[] = [];
+  private debugLogger: DebugLogger;
 
   constructor(app: App, private settings: AttendeesExtractorSettings) {
     super(app);
+    this.debugLogger = new DebugLogger(settings, 'AttendeeSuggest');
     this.peopleScanner = new PeopleScanner(app, settings);
     this.initializePeople();
   }
 
 
   async initializePeople(): Promise<void> {
+    this.debugLogger.log('Initializing people...');
     this.allPeople = await this.peopleScanner.getAllPeople();
+    this.debugLogger.log('Initialized', this.allPeople.length, 'people');
   }
 
   async refreshPeople(): Promise<void> {
@@ -35,17 +40,27 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     editor: Editor,
     file: TFile
   ): EditorSuggestTriggerInfo | null {
+    this.debugLogger.group('onTrigger');
+    this.debugLogger.log('Cursor position:', cursor);
+    
     if (!this.settings.enableAutocomplete) {
+      this.debugLogger.log('Autocomplete disabled');
+      this.debugLogger.groupEnd();
       return null;
     }
 
     const trigger = this.settings.autocompleteTrigger;
+    this.debugLogger.log('Trigger character:', trigger);
+    
     if (!trigger) {
+      this.debugLogger.warn('No trigger character configured');
+      this.debugLogger.groupEnd();
       return null;
     }
 
     // Get the current line
     const line = editor.getLine(cursor.line);
+    this.debugLogger.log('Current line:', line);
     
     // Find the trigger character by looking backwards from cursor
     let triggerPos = -1;
@@ -62,8 +77,12 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
 
     // No trigger found
     if (triggerPos === -1) {
+      this.debugLogger.log('No trigger found in line');
+      this.debugLogger.groupEnd();
       return null;
     }
+    
+    this.debugLogger.log('Trigger found at position:', triggerPos);
 
     const startPos = {
       line: cursor.line,
@@ -86,6 +105,11 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
 
     const fullText = editor.getRange(startPos, endPos);
     const query = fullText.substring(trigger.length);
+    
+    this.debugLogger.log('Full text:', fullText);
+    this.debugLogger.log('Query:', query);
+    this.debugLogger.log('Trigger info:', { start: startPos, end: endPos, query });
+    this.debugLogger.groupEnd();
 
     return {
       start: startPos,
@@ -95,21 +119,31 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
   }
 
   getSuggestions(context: EditorSuggestContext): PersonSuggestion[] {
+    this.debugLogger.group('getSuggestions');
     const query = context.query.toLowerCase();
+    this.debugLogger.log('Query:', query);
+    this.debugLogger.log('Total people available:', this.allPeople.length);
     
     if (!query) {
       // Return top 10 people when no query
-      return this.allPeople.slice(0, 10);
+      const suggestions = this.allPeople.slice(0, 10);
+      this.debugLogger.log('No query - returning top 10 people:', suggestions.length);
+      this.debugLogger.groupEnd();
+      return suggestions;
     }
 
     const filtered = this.peopleScanner.filterPeople(this.allPeople, query);
+    this.debugLogger.log('Filtered suggestions:', filtered.length);
     
     // If no matches, return a special "create new" suggestion
     if (filtered.length === 0 && query.trim()) {
-      return [{
+      const newSuggestion = [{
         name: context.query, // Use original query (with proper casing)
         file: null as any, // Special marker for "no match" case
       }];
+      this.debugLogger.log('No matches - returning "create new" suggestion:', newSuggestion);
+      this.debugLogger.groupEnd();
+      return newSuggestion;
     }
     
     // Prioritize exact matches and prefix matches
@@ -145,6 +179,10 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
       // Alphabetical otherwise
       return aName.localeCompare(bName);
     }).slice(0, 10); // Limit to 10 suggestions
+    
+    this.debugLogger.log('Final suggestions:', filtered.length);
+    this.debugLogger.groupEnd();
+    return filtered;
   }
 
   renderSuggestion(person: PersonSuggestion, el: HTMLElement): void {

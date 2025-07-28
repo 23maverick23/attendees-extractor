@@ -1,5 +1,6 @@
 import { App, TFile } from "obsidian";
 import { AttendeesExtractorSettings } from './types';
+import { DebugLogger } from './debug-logger';
 
 export interface PersonSuggestion {
   name: string;
@@ -8,39 +9,58 @@ export interface PersonSuggestion {
 }
 
 export class PeopleScanner {
+  private debugLogger: DebugLogger;
+
   constructor(
     private app: App,
     private settings: AttendeesExtractorSettings
-  ) {}
+  ) {
+    this.debugLogger = new DebugLogger(settings, 'PeopleScanner');
+  }
 
   async getAllPeople(): Promise<PersonSuggestion[]> {
+    this.debugLogger.group('getAllPeople');
+    
     if (!this.settings.peopleDirectory) {
+      this.debugLogger.warn('No people directory configured');
+      this.debugLogger.groupEnd();
       return [];
     }
 
+    this.debugLogger.log('People directory:', this.settings.peopleDirectory);
+
     const people: PersonSuggestion[] = [];
     const files = this.app.vault.getMarkdownFiles();
+    
+    this.debugLogger.log('Total markdown files in vault:', files.length);
 
     for (const file of files) {
       if (this.isPersonFile(file)) {
+        this.debugLogger.log('Found person file:', file.path);
         const name = this.extractPersonName(file);
         if (name) {
           const aliases = await this.extractAliases(file);
+          this.debugLogger.log('Person:', name, 'Aliases:', aliases);
           people.push({ name, file, aliases });
         }
       }
     }
 
+    this.debugLogger.log('Total people found:', people.length);
+    this.debugLogger.groupEnd();
     return people.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   filterPeople(people: PersonSuggestion[], query: string): PersonSuggestion[] {
+    this.debugLogger.log('Filtering people with query:', query);
+    
     if (!query) {
+      this.debugLogger.log('No query provided, returning all people');
       return people;
     }
 
     const lowercaseQuery = query.toLowerCase().trim();
-    return people.filter(person => {
+    const filtered = people.filter(person => {
       const lowercaseName = person.name.toLowerCase();
       
       // Match if name contains the query
@@ -70,18 +90,36 @@ export class PeopleScanner {
       
       return false;
     });
+    
+    this.debugLogger.log('Filtered results:', filtered.length, 'people');
+    return filtered;
   }
 
   private isPersonFile(file: TFile): boolean {
     const peopleDir = this.settings.peopleDirectory;
     if (!peopleDir) {
+      this.debugLogger.warn('No people directory configured');
       return false;
     }
 
+    this.debugLogger.log(
+      'Checking if file is person file:', 
+      file.path, 
+      'against directory:', 
+      peopleDir
+    );
+
     // Check if file is in the people directory (or subdirectory)
     const normalizedPeopleDir = peopleDir.endsWith('/') ? peopleDir : peopleDir + '/';
-    return file.path.startsWith(normalizedPeopleDir) || 
-           file.path === peopleDir.replace(/\/$/, '') + '.md';
+    const isInDirectory = file.path.startsWith(normalizedPeopleDir);
+    const isDirectFile = file.path === peopleDir + '.md';
+    
+    this.debugLogger.log(
+      'File check results - isInDirectory:', isInDirectory, 
+      'isDirectFile:', isDirectFile
+    );
+    
+    return isInDirectory || isDirectFile;
   }
 
   private extractPersonName(file: TFile): string {

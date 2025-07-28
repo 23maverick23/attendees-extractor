@@ -4,15 +4,14 @@ on:
   push:
     tags:
       - "*"
-      - "!*-beta*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Skip builds if commit message contains [skip ci]
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    # Skip builds for beta releases or if commit message contains [skip ci]
+    if: ${{ !contains(github.ref_name, 'beta') && !contains(github.event.head_commit.message, '[skip ci]') }}
     steps:
       - uses: actions/checkout@v3
 
@@ -34,5 +33,4 @@ jobs:
 
           gh release create "$tag" \
             --title="$tag" \
-            --draft \
             main.js manifest.json

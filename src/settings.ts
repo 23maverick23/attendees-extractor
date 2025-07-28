@@ -23,6 +23,7 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 		this.addDirectoriesSetting(containerEl);
 		this.addEnableOnSaveSetting(containerEl);
 		this.addShowNotificationsSetting(containerEl);
+		this.addDebugModeSetting(containerEl);
 		
 		// Autocomplete settings section
 		containerEl.createEl("h2", { text: "Autocomplete Settings" });
@@ -126,6 +127,20 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 					.setValue(this.settingsManager.settings.showNotifications)
 					.onChange(async (value) => {
 						this.settingsManager.settings.showNotifications = value;
+						await this.settingsManager.saveSettings();
+					})
+			);
+	}
+
+	private addDebugModeSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Debug mode")
+			.setDesc("Enable debug logging in browser console (for troubleshooting)")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.settingsManager.settings.debugMode)
+					.onChange(async (value) => {
+						this.settingsManager.settings.debugMode = value;
 						await this.settingsManager.saveSettings();
 					})
 			);
