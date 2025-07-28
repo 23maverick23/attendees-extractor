@@ -22,9 +22,10 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 		this.addTemplateSetting(containerEl);
 		this.addDirectoriesSetting(containerEl);
 		this.addEnableOnSaveSetting(containerEl);
+		this.addShowNotificationsSetting(containerEl);
 		
 		// Autocomplete settings section
-		containerEl.createEl("h3", { text: "Autocomplete Settings" });
+		containerEl.createEl("h2", { text: "Autocomplete Settings" });
 		this.addEnableAutocompleteSetting(containerEl);
 		this.addAutocompleteTriggerSetting(containerEl);
 		this.addPeopleDirectorySetting(containerEl);
@@ -112,6 +113,20 @@ export class AttendeesExtractorSettingTab extends PluginSettingTab {
 						this.settingsManager.settings.enableOnSave = value;
 						await this.settingsManager.saveSettings();
 						await this.settingsManager.onSettingChange();
+					})
+			);
+	}
+
+	private addShowNotificationsSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Show notifications")
+			.setDesc("Show notification messages when extracting attendees")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.settingsManager.settings.showNotifications)
+					.onChange(async (value) => {
+						this.settingsManager.settings.showNotifications = value;
+						await this.settingsManager.saveSettings();
 					})
 			);
 	}

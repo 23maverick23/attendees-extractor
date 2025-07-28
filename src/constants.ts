@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: AttendeesExtractorSettings = {
   template: "[[People/{name}|{name}]]",
   directories: [],
   enableOnSave: false,
+  showNotifications: true,
   enableAutocomplete: true,
   autocompleteTrigger: "@",
   peopleDirectory: "People",

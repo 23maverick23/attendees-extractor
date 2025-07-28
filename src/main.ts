@@ -37,13 +37,14 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
   }
 
   async onSettingChange() {
+    // Remove existing interceptor first to prevent duplicates
+    this.saveInterceptor.remove();
+    
     // Reinitialize components with new settings
     this.initializeComponents();
 
     if (this.settings.enableOnSave) {
       this.saveInterceptor.setup();
-    } else {
-      this.saveInterceptor.remove();
     }
 
     if (this.settings.enableAutocomplete) {
@@ -81,7 +82,9 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
     const targetFile = file || this.app.workspace.getActiveFile();
 
     if (!FileUtils.isMarkdownFile(targetFile)) {
-      new Notice("Please open a markdown file");
+      if (this.settings.showNotifications) {
+        new Notice("Please open a markdown file");
+      }
       return;
     }
 
@@ -95,13 +98,19 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
 
       if (attendees.length > 0) {
         await this.frontmatterManager.updateFrontmatter(targetFile, attendees);
-        new Notice(`Updated ${attendees.length} attendees in frontmatter`);
+        if (this.settings.showNotifications) {
+          new Notice(`Updated ${attendees.length} attendees in frontmatter`);
+        }
       } else {
-        new Notice("No attendees found");
+        if (this.settings.showNotifications) {
+          new Notice("No attendees found");
+        }
       }
     } catch (error) {
       console.error('Attendees extraction failed:', error);
-      new Notice(`Error processing file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (this.settings.showNotifications) {
+        new Notice(`Error processing file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   }
 
@@ -111,7 +120,9 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
     );
 
     if (files.length === 0) {
-      new Notice("No files found in allowed directories");
+      if (this.settings.showNotifications) {
+        new Notice("No files found in allowed directories");
+      }
       return;
     }
 
@@ -158,7 +169,9 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
       }, 3000);
     }
 
-    new Notice(`Processed ${processedCount} files, updated ${updatedCount} files`);
+    if (this.settings.showNotifications) {
+      new Notice(`Processed ${processedCount} files, updated ${updatedCount} files`);
+    }
   }
 
   async loadSettings() {
