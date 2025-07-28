@@ -19,43 +19,44 @@ export class PeopleScanner {
   }
 
   async getAllPeople(): Promise<PersonSuggestion[]> {
-    this.debugLogger.group('getAllPeople');
-    
     if (!this.settings.peopleDirectory) {
       this.debugLogger.warn('No people directory configured');
-      this.debugLogger.groupEnd();
       return [];
     }
-
-    this.debugLogger.log('People directory:', this.settings.peopleDirectory);
 
     const people: PersonSuggestion[] = [];
     const files = this.app.vault.getMarkdownFiles();
     
+    this.debugLogger.log('Scanning for people in directory:', this.settings.peopleDirectory);
     this.debugLogger.log('Total markdown files in vault:', files.length);
 
+    let checkedFiles = 0;
     for (const file of files) {
       if (this.isPersonFile(file)) {
-        this.debugLogger.log('Found person file:', file.path);
         const name = this.extractPersonName(file);
         if (name) {
           const aliases = await this.extractAliases(file);
-          this.debugLogger.log('Person:', name, 'Aliases:', aliases);
           people.push({ name, file, aliases });
+          this.debugLogger.log('Found person:', name, 'at', file.path);
         }
       }
+      checkedFiles++;
     }
 
-    this.debugLogger.log('Total people found:', people.length);
-    this.debugLogger.groupEnd();
+    this.debugLogger.log(`Scanned ${checkedFiles} files, found ${people.length} people`);
+    
+    if (people.length === 0) {
+      this.debugLogger.warn('No people found! Check that:', 
+        `1. People directory "${this.settings.peopleDirectory}" exists`,
+        '2. Directory contains .md files',
+        '3. Files are named like PersonName.md');
+    }
+    
     return people.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   filterPeople(people: PersonSuggestion[], query: string): PersonSuggestion[] {
-    this.debugLogger.log('Filtering people with query:', query);
-    
     if (!query) {
-      this.debugLogger.log('No query provided, returning all people');
       return people;
     }
 
@@ -91,33 +92,19 @@ export class PeopleScanner {
       return false;
     });
     
-    this.debugLogger.log('Filtered results:', filtered.length, 'people');
     return filtered;
   }
 
   private isPersonFile(file: TFile): boolean {
     const peopleDir = this.settings.peopleDirectory;
     if (!peopleDir) {
-      this.debugLogger.warn('No people directory configured');
       return false;
     }
-
-    this.debugLogger.log(
-      'Checking if file is person file:', 
-      file.path, 
-      'against directory:', 
-      peopleDir
-    );
 
     // Check if file is in the people directory (or subdirectory)
     const normalizedPeopleDir = peopleDir.endsWith('/') ? peopleDir : peopleDir + '/';
     const isInDirectory = file.path.startsWith(normalizedPeopleDir);
     const isDirectFile = file.path === peopleDir + '.md';
-    
-    this.debugLogger.log(
-      'File check results - isInDirectory:', isInDirectory, 
-      'isDirectFile:', isDirectFile
-    );
     
     return isInDirectory || isDirectFile;
   }
