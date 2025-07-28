@@ -6,7 +6,6 @@ import {
   EditorSuggestContext,
   EditorSuggestTriggerInfo,
   TFile,
-  KeymapContext,
 } from "obsidian";
 import { AttendeesExtractorSettings } from './types';
 import { PeopleScanner, PersonSuggestion } from './people-scanner';
@@ -38,7 +37,7 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
   onTrigger(
     cursor: EditorPosition,
     editor: Editor,
-    file: TFile
+    _file: TFile
   ): EditorSuggestTriggerInfo | null {
     if (!this.settings.enableAutocomplete) {
       return null;
@@ -120,7 +119,7 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     if (filtered.length === 0 && query.trim()) {
       return [{
         name: context.query, // Use original query (with proper casing)
-        file: null as any, // Special marker for "no match" case
+        file: null as unknown as TFile, // Special marker for "no match" case
       }];
     }
     
@@ -198,7 +197,7 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     }
   }
 
-  selectSuggestion(person: PersonSuggestion, evt: MouseEvent | KeyboardEvent): void {
+  selectSuggestion(person: PersonSuggestion, _evt: MouseEvent | KeyboardEvent): void {
     if (!this.context) {
       return;
     }
