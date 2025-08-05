@@ -20,7 +20,7 @@ export class AttendeeSuggest extends EditorSuggest<PersonSuggestion> {
     super(app);
     this.debugLogger = new DebugLogger(settings, 'AttendeeSuggest');
     this.peopleScanner = new PeopleScanner(app, settings);
-    this.initializePeople();
+    // Don't initialize immediately - wait for vault to be ready
   }
 
 

@@ -28,6 +28,12 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
 
     if (this.settings.enableAutocomplete) {
       this.setupAutocomplete();
+      // Initialize people after vault is ready
+      this.app.workspace.onLayoutReady(() => {
+        if (this.attendeeSuggest) {
+          this.attendeeSuggest.initializePeople();
+        }
+      });
     }
   }
 
@@ -49,6 +55,10 @@ export default class AttendeesExtractorPlugin extends Plugin implements Settings
 
     if (this.settings.enableAutocomplete) {
       this.setupAutocomplete();
+      // Re-initialize people when settings change
+      if (this.attendeeSuggest) {
+        this.attendeeSuggest.initializePeople();
+      }
     } else {
       this.removeAutocomplete();
     }
